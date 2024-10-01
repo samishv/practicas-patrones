@@ -1,15 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Sep 13 12:13:26 2024
-
-@author: lrl13
-"""
 import numpy as np 
 import pandas as pd 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
-
 #PRÁCTICA 1: DISTINCIÓN ENTRE ESPECIES DE PINGÜINOS 
 
 
@@ -50,6 +42,37 @@ def distancia_mahalanobis(data,centros):
     return distancias
         
     
+#----------------------------------------------------------------------
+#   FUNCIÓN PARA CÁLCULO DE DISTANCIA DE COSENO
+#----------------------------------------------------------------------
+def distancia_coseno(data, centros):
+    distancias = np.zeros((data.shape[0], centros.shape[0]))
+    for i in range(data.shape[0]):
+        for j in range(centros.shape[0]):
+            # Producto punto entre el dato y el centroide
+            numerador = np.dot(data[i], centros[j])
+            # Normas de los vectores
+            norma_data = np.linalg.norm(data[i])
+            norma_centro = np.linalg.norm(centros[j])
+            # Distancia coseno
+            distancias[i, j] = 1 - (numerador / (norma_data * norma_centro))
+    return distancias
+
+
+#----------------------------------------------------------------------
+#   FUNCIÓN PARA CÁLCULO DE DISTANCIA MANHATTAN
+#----------------------------------------------------------------------
+
+def distancia_manhattan(data,centros,num_clases):
+    #Calcula la distancia Manhattan entre cada dato y cada centro
+    distancias = np.zeros((data.shape[0],num_clases))
+    for i in range(data.shape[0]):
+        distancias[i,0] = np.sum(np.abs(data[i,:] - centros[0,:]))
+        distancias[i,1] = np.sum(np.abs(data[i,:] - centros[1,:]))
+        distancias[i,2] = np.sum(np.abs(data[i,:] - centros[2,:]))
+
+    return distancias
+
 #----------------------------------------------------------------------
 
 # Crear un diccionario para almacenar los promedios por especie
@@ -122,13 +145,23 @@ asigna_euclidiana = np.argmin(dist_euclidiana,axis = 1)
 dist_mahalanobis = distancia_mahalanobis(datos, centroides_promedio)
 #encontrar la clase con la distancia mínima
 asigna_mahalanobis = np.argmin(dist_mahalanobis,axis = 1)
+# Calcula la distancia de COSENO entre los datos de test y los centroides
+dist_coseno = distancia_coseno(datos, centroides_promedio)
+# encontrar la clase con la distancia mínima
+asigna_coseno = np.argmin(dist_coseno, axis=1)
+#Calcula la distancia MANHATTAN entre los datos de test y los centroides 
+dist_manhattan = distancia_manhattan(datos,centroides_promedio,3)
+#encontrar la clase con la distancia mínima
+asigna_manhattan = np.argmin(dist_manhattan,axis = 1)
 #----------------------------------------------------------------------
 # Convertir las clases numéricas en nombres de especies
 test_data['Clase Asignada (Dist euclidiana)'] = [clases_mapeo[clase] for clase in asigna_euclidiana]
 test_data['Clase Asignada (Dist Mahalanobis)'] = [clases_mapeo[clase] for clase in asigna_mahalanobis]
+test_data['Clase Asignada (Dist Coseno)'] = [clases_mapeo[clase] for clase in asigna_coseno]
+test_data['Clase Asignada (Dist Manhattan)'] = [clases_mapeo[clase] for clase in asigna_manhattan]
 
 # Mostrar una tabla con la clase real y la clase asignada
-tabla_resultados = test_data[['Species', 'Clase Asignada (Dist euclidiana)','Clase Asignada (Dist Mahalanobis)']]
+tabla_resultados = test_data[['Species', 'Clase Asignada (Dist euclidiana)', 'Clase Asignada (Dist Mahalanobis)',
+                              'Clase Asignada (Dist Coseno)', 'Clase Asignada (Dist Manhattan)']]
 print(tabla_resultados)
-
 
